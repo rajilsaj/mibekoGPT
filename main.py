@@ -4,7 +4,10 @@ from bs4 import BeautifulSoup
 from PyPDF2 import PdfMerger
 
 main = "https://www.sgg.cg/JO/"
-merger = PdfMerger()
+
+foldername = main.rstrip('/').split('/')[-1]
+if not os.path.exists(foldername):
+    os.mkdir(foldername)
 
 def Get_links():
     result = requests.get(main).text
@@ -38,6 +41,15 @@ def Parse_links():
 def Save():
     for item in Parse_links():
         r = requests.get(item, stream=True)
+        filename = item.split("/")[-1]
+        with open(f"{foldername}/{filename}", 'wb') as f:
+                    f.write(requests.get(item).content)
+                    print(f'Got {filename}.pdf')
+
+'''
+def Save():
+    for item in Parse_links():
+        r = requests.get(item, stream=True)
         pdf_file_name = os.path.basename(item)
         if r.status_code == 200:
                 filepath = os.path.join(os.getcwd(), pdf_file_name)
@@ -53,7 +65,7 @@ def Save():
             print(f'HTTP response status code: {response.status_code}')
             return False
 
-    print("done")
+    print("done") '''
 
 
 
