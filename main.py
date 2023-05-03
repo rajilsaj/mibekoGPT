@@ -1,7 +1,10 @@
+import os
 import requests 
 from bs4 import BeautifulSoup
+from PyPDF2 import PdfMerger
 
 main = "https://www.sgg.cg/JO/"
+merger = PdfMerger()
 
 def Get_links():
     result = requests.get(main).text
@@ -30,15 +33,26 @@ def Parse_links():
             #print(lnew)
             if link.endswith('.pdf') :
                 pdf.add(lnew)
-    print(pdf)
     return pdf
 
 def Save():
     for item in Parse_links():
-        print(f"Downloading File: {item[55:]}")
-        r = requests.get(item)
-        with open(f"{item[55:]}", "wb") as f:
-              f.write(r.content)
+        r = requests.get(item, stream=True)
+        pdf_file_name = os.path.basename(item)
+        if r.status_code == 200:
+                filepath = os.path.join(os.getcwd(), pdf_file_name)
+                with open(filepath, 'wb') as pdf_object:
+                    pdf_object.write(r.content)
+                    print(f'Printed successfully {pdf_file_name}')
+                    return True
+                    merger.append(filepath)
+                merger.write("result.pdf")
+                merger.close()
+        else:
+            print(f'Uh oh! Could not download {pdf_file_name},')
+            print(f'HTTP response status code: {response.status_code}')
+            return False
+
     print("done")
 
 
@@ -47,4 +61,4 @@ def Save():
 
 Get_links()
 Parse_links()
-#Save()
+Save()
