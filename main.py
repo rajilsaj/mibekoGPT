@@ -26,8 +26,10 @@ def Parse_links():
         doc = BeautifulSoup(r, 'html.parser')
         for item in doc.findAll('a'):
             link = item["href"]
+            lnew = new_url + '/' + link
+            #print(lnew)
             if link.endswith('.pdf') :
-                pdf.add(link)
+                pdf.add(lnew)
     print(pdf)
     return pdf
 
