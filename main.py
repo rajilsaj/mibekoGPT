@@ -1,13 +1,15 @@
 import os
-import requests 
+import PyPDF2
+import requests
 from bs4 import BeautifulSoup
-from PyPDF2 import PdfMerger
+
 
 main = "https://www.sgg.cg/JO/"
 
 foldername = main.rstrip('/').split('/')[-1]
 if not os.path.exists(foldername):
     os.mkdir(foldername)
+
 
 def Get_links():
     result = requests.get(main).text
@@ -20,55 +22,34 @@ def Get_links():
             linkin = linkis[:len(linkis) - 1]
             linked.append(linkin)
     del linked[0:2]
-    del linked[len(linked) - 1 ]
+    del linked[len(linked) - 1]
     return linked
+
 
 def Parse_links():
     pdf = set()
-    
+
     for url in Get_links():
         new_url = main + url
+        # print(new_url.split('/')[-1])
         r = requests.get(new_url).text
         doc = BeautifulSoup(r, 'html.parser')
         for item in doc.findAll('a'):
             link = item["href"]
             lnew = new_url + '/' + link
-            #print(lnew)
-            if link.endswith('.pdf') :
+            if link.endswith('.pdf'):
                 pdf.add(lnew)
     return pdf
+
 
 def Save():
     for item in Parse_links():
         r = requests.get(item, stream=True)
         filename = item.split("/")[-1]
+        # print(item.split('/')[-2])
         with open(f"{foldername}/{filename}", 'wb') as f:
-                    f.write(requests.get(item).content)
-                    print(f'Got {filename}.pdf')
-
-'''
-def Save():
-    for item in Parse_links():
-        r = requests.get(item, stream=True)
-        pdf_file_name = os.path.basename(item)
-        if r.status_code == 200:
-                filepath = os.path.join(os.getcwd(), pdf_file_name)
-                with open(filepath, 'wb') as pdf_object:
-                    pdf_object.write(r.content)
-                    print(f'Printed successfully {pdf_file_name}')
-                    return True
-                    merger.append(filepath)
-                merger.write("result.pdf")
-                merger.close()
-        else:
-            print(f'Uh oh! Could not download {pdf_file_name},')
-            print(f'HTTP response status code: {response.status_code}')
-            return False
-
-    print("done") '''
-
-
-
+            f.write(requests.get(item).content)
+            print(f"{filename}.pdf téléchargé")
 
 
 Get_links()
